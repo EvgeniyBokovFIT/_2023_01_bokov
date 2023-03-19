@@ -10,12 +10,14 @@ public class MultiplicationTablePrinter {
         int mainLength = IntegerUtils.getNumberOfDigits(tableSize * tableSize);
         TableInfo tableInfo = new TableInfo(tableSize, firstColumnLength, mainLength);
 
+        String separatorLine = getSeparatorLine(tableInfo);
+
         System.out.println(getArgumentsLine(tableInfo));
-        System.out.println(getSeparatorLine(tableInfo));
+        System.out.println(separatorLine);
 
         for (int curMultiplier = 1; curMultiplier <= tableSize; curMultiplier++) {
             System.out.println(getTableLine(curMultiplier, tableInfo));
-            System.out.println(getSeparatorLine(tableInfo));
+            System.out.println(separatorLine);
         }
     }
 
