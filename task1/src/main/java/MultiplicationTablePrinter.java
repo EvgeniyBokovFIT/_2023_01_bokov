@@ -6,8 +6,8 @@ public class MultiplicationTablePrinter {
     private static final String GAP = " ";
 
     public void printMultiplicationTable(Integer tableSize) {
-        int firstColumnLength = IntegerUtils.getNumberOfDigits(tableSize);
-        int mainLength = IntegerUtils.getNumberOfDigits(tableSize * tableSize);
+        int firstColumnLength = getNumberOfDigits(tableSize);
+        int mainLength = getNumberOfDigits(tableSize * tableSize);
         TableInfo tableInfo = new TableInfo(tableSize, firstColumnLength, mainLength);
 
         String separatorLine = getSeparatorLine(tableInfo);
@@ -36,7 +36,7 @@ public class MultiplicationTablePrinter {
         result.append(GAP.repeat(tableInfo.firstColumnLength()));
 
         for (int curNum = 1; curNum <= tableInfo.size(); curNum++) {
-            int gapsCount = tableInfo.mainColumnsLength() - IntegerUtils.getNumberOfDigits(curNum);
+            int gapsCount = tableInfo.mainColumnsLength() - getNumberOfDigits(curNum);
             result.append(getTableCell(gapsCount, curNum));
         }
 
@@ -46,13 +46,13 @@ public class MultiplicationTablePrinter {
     private String getTableLine(int multiplier, TableInfo tableInfo) {
         StringBuilder result = new StringBuilder();
 
-        int gapsCountFirstColumn = tableInfo.firstColumnLength() - IntegerUtils.getNumberOfDigits(multiplier);
+        int gapsCountFirstColumn = tableInfo.firstColumnLength() - getNumberOfDigits(multiplier);
         result.append(GAP.repeat(gapsCountFirstColumn))
                 .append(multiplier);
 
         for (int curNum = 1; curNum <= tableInfo.size(); curNum++) {
             int curCellValue = curNum * multiplier;
-            int gapsCount = tableInfo.mainColumnsLength() - IntegerUtils.getNumberOfDigits(curCellValue);
+            int gapsCount = tableInfo.mainColumnsLength() - getNumberOfDigits(curCellValue);
             result.append(getTableCell(gapsCount, curCellValue));
         }
 
@@ -64,5 +64,9 @@ public class MultiplicationTablePrinter {
         return VERTICAL_SEPARATOR +
                 GAP.repeat(gapsCount) +
                 cellValue;
+    }
+
+    private int getNumberOfDigits(int number) {
+        return Integer.toString(number).length();
     }
 }
