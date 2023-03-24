@@ -51,14 +51,10 @@ public class Triangle extends Shape{
     private Double calculateAngleOppositeFirstSide(Double firstSide, Double secondSide, Double thirdSide) {
         double angleInRadians = Math.acos(
                 (square(secondSide) + square(thirdSide) - square(firstSide)) / (2 * secondSide * thirdSide));
-        return radiansToDegrees(angleInRadians);
+        return Math.toDegrees(angleInRadians);
     }
 
     private Double square(Double number) {
         return number * number;
-    }
-
-    private Double radiansToDegrees(Double radians) {
-        return radians * 180 / Math.PI;
     }
 }
