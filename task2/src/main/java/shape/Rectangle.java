@@ -1,6 +1,6 @@
 package shape;
 
-import exception.FigureException;
+import exception.ShapeException;
 
 import java.text.DecimalFormat;
 
@@ -10,10 +10,10 @@ public class Rectangle extends Shape{
     private final Double length;
     private final Double width;
 
-    public Rectangle(Double firstSide, Double secondSide) throws FigureException {
+    public Rectangle(Double firstSide, Double secondSide) throws ShapeException {
         super("Прямоугольник");
         if(firstSide < 0 || secondSide < 0) {
-            throw new FigureException(NEGATIVE_ARGS_MESSAGE);
+            throw new ShapeException(NEGATIVE_ARGS_MESSAGE);
         }
         this.length = Math.max(firstSide, secondSide);
         this.width = Math.min(firstSide, secondSide);

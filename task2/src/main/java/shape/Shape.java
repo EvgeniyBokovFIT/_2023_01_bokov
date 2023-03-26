@@ -3,9 +3,10 @@ package shape;
 import java.text.DecimalFormat;
 
 public abstract class Shape {
+    private static final Integer DECIMAL_PLACES = 2;
     protected static final String UNITS = "мм";
     protected static final String AREA_UNITS = "кв. мм";
-    protected static final String FORMAT_PATTERN = "#.##";
+    protected static final String FORMAT_PATTERN = "#." + "#".repeat(DECIMAL_PLACES);
     protected static final String NEGATIVE_ARGS_MESSAGE = "Параметры фигуры не могут принимать отрицательные значения";
 
     protected String name;

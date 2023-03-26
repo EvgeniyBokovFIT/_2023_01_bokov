@@ -1,6 +1,6 @@
 package shape;
 
-import exception.FigureException;
+import exception.ShapeException;
 
 import java.text.DecimalFormat;
 
@@ -9,10 +9,10 @@ public class Circle extends Shape {
 
     private final Double radius;
 
-    public Circle(Double radius) throws FigureException {
+    public Circle(Double radius) throws ShapeException {
         super("Круг");
         if(radius < 0) {
-            throw new FigureException(NEGATIVE_ARGS_MESSAGE);
+            throw new ShapeException(NEGATIVE_ARGS_MESSAGE);
         }
         this.radius = radius;
         this.area = Math.PI * radius * radius;

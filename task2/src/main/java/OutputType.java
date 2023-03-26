@@ -1,4 +1,4 @@
 public enum OutputType {
-    Console,
-    File
+    CONSOLE,
+    FILE
 }

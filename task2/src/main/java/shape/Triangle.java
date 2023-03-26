@@ -1,21 +1,24 @@
 package shape;
 
-import exception.FigureException;
+import exception.ShapeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
 
 public class Triangle extends Shape{
     private static final String ANGLE_UNITS = "градусов";
     public static final Integer ARGS_COUNT = 3;
+    private static final Logger log = LoggerFactory.getLogger(Triangle.class);
 
     private final double firstSide;
     private final double secondSide;
     private final double thirdSide;
 
-    public Triangle(Double firstSide, Double secondSide, Double thirdSide) throws FigureException {
+    public Triangle(Double firstSide, Double secondSide, Double thirdSide) throws ShapeException {
         super("Треугольник");
         if(firstSide < 0 || secondSide < 0 || thirdSide < 0) {
-            throw new FigureException(NEGATIVE_ARGS_MESSAGE);
+            throw new ShapeException(NEGATIVE_ARGS_MESSAGE);
         }
         this.firstSide = firstSide;
         this.secondSide = secondSide;
@@ -49,8 +52,12 @@ public class Triangle extends Shape{
     }
 
     private Double calculateAngleOppositeFirstSide(Double firstSide, Double secondSide, Double thirdSide) {
-        double angleInRadians = Math.acos(
-                (square(secondSide) + square(thirdSide) - square(firstSide)) / (2 * secondSide * thirdSide));
+        if(secondSide * thirdSide == 0) {
+            return 0.D;
+        }
+        double cos = (square(secondSide) + square(thirdSide) - square(firstSide)) / (2 * secondSide * thirdSide);
+        double angleInRadians = Math.acos(cos);
+        log.debug("Угол в радианах: {}. Параметры: {}, {}, {}", angleInRadians, firstSide, secondSide, thirdSide);
         return Math.toDegrees(angleInRadians);
     }
 
