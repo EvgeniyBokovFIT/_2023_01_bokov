@@ -3,11 +3,11 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ArgumentsParser {
+public class CommandLineArgumentsParser {
     private static final String OUTPUT_TO_FILE_OPTION = "f";
     private static final String OUTPUT_TO_CONSOLE_OPTION = "c";
     private static final String FILE_EXTENSION = ".txt";
-    private static final Logger log = LoggerFactory.getLogger(ArgumentsParser.class);
+    private static final Logger log = LoggerFactory.getLogger(CommandLineArgumentsParser.class);
 
     private String outputFilename;
     private String inputFilename;

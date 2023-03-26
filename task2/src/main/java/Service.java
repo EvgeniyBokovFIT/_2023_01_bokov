@@ -14,13 +14,11 @@ public class Service {
 
     public void doWork(String[] args) {
         try {
-            ArgumentsParser parser = new ArgumentsParser();
-            parser.parse(args);
-            log.info("Парсинг командной строки выполнен успешно. " +
-                    "Поток вывода: {}", parser.getOutputType());
+            CommandLineArgumentsParser commandLineParser = new CommandLineArgumentsParser();
+            commandLineParser.parse(args);
 
             FileReader fileReader = new FileReader();
-            String inputFilename = parser.getInputFilename();
+            String inputFilename = commandLineParser.getInputFilename();
             fileReader.read(inputFilename);
             log.info("Входной файл успешно прочитан. Название файла: \"{}\"", inputFilename);
 
@@ -37,8 +35,7 @@ public class Service {
                     shapeType, shapeParameters);
             String output = shape.getShapeCharacteristics();
             Writer writer = new Writer();
-            writer.writeInfo(parser.getOutputType(), output, parser.getOutputFilename());
-            log.info("Характеристики фигуры записаны в поток вывода");
+            writer.writeInfo(commandLineParser.getOutputType(), output, commandLineParser.getOutputFilename());
         } catch (ShapeException | FileException | IllegalArgumentException e) {
             log.error(e.getMessage() + "\n" + e);
         } catch (ParseException e) {
