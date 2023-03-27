@@ -1,2 +1,3 @@
 rootProject.name = '_2023_01_bokov'
+include 'task1'
 include 'task2'
