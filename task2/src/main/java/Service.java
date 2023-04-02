@@ -10,28 +10,33 @@ import shape.Shape;
 import java.util.List;
 
 public class Service {
+    private static final String FILE_READ_SUCCESSFULLY_MESSAGE =
+            "Входной файл успешно прочитан. Название файла: \"{}\"";
+    private static final String PARSING_COMPLETED_SUCCESSFULLY_MESSAGE =
+            "Парсинг информации из входного файла выполнен успешно. Тип фигуры: {}. Параметры: {}";
+    private static final String COMMAND_LINE_PARSING_FAILURE_MESSAGE =
+            "Ошибка парсинга командной строки. ";
+    private static final String SHAPE_CREATED_SUCCESSFULLY_MESSAGE =
+            "Фигура успешно создана." + "Введенный тип фигуры: {} ." + "Введенные параметры: {}";
     private static final Logger log = LoggerFactory.getLogger(Service.class);
 
     public void doWork(String[] args) {
         try {
-            CommandLineArgumentsParser commandLineParser = new CommandLineArgumentsParser();
-            commandLineParser.parse(args);
+            CommandLineArgumentsParser commandLineParser = new CommandLineArgumentsParser(args);
 
-            FileReader fileReader = new FileReader();
             String inputFilename = commandLineParser.getInputFilename();
-            fileReader.read(inputFilename);
-            log.info("Входной файл успешно прочитан. Название файла: \"{}\"", inputFilename);
+            FileContent fileContent = FileReader.read(inputFilename);
+            log.info(FILE_READ_SUCCESSFULLY_MESSAGE, inputFilename);
 
-            FileInfoParser fileInfoParser = new FileInfoParser();
-            fileInfoParser.parse(fileReader.getFirstLine(), fileReader.getParameters());
+            FileInfoParser fileInfoParser = new FileInfoParser(fileContent);
             ShapeType shapeType = fileInfoParser.getShapeType();
             List<Double> shapeParameters = fileInfoParser.getParameters();
-            log.info("Парсинг информации из входного файла выполнен успешно. Тип фигуры: {}. Параметры: {}",
+            log.info(PARSING_COMPLETED_SUCCESSFULLY_MESSAGE,
                     shapeType, shapeParameters);
 
             ShapeFactory shapeFactory = new ShapeFactory();
             Shape shape = shapeFactory.getShape(shapeType, shapeParameters);
-            log.info("Фигура успешно создана." + "Введенный тип фигуры: {} ." + "Введенные параметры: {}",
+            log.info(SHAPE_CREATED_SUCCESSFULLY_MESSAGE,
                     shapeType, shapeParameters);
             String output = shape.getShapeCharacteristics();
             Writer writer = new Writer();
@@ -39,7 +44,7 @@ public class Service {
         } catch (ShapeException | FileException | IllegalArgumentException e) {
             log.error(e.getMessage() + "\n" + e);
         } catch (ParseException e) {
-            log.error("Ошибка парсинга командной строки. " + e.getMessage() + "\n" + e);
+            log.error(COMMAND_LINE_PARSING_FAILURE_MESSAGE + e.getMessage() + "\n" + e);
         }
     }
 }

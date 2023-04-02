@@ -10,50 +10,47 @@ import java.util.Scanner;
 
 public class FileReader {
     private static final String FILE_SEPARATOR = " ";
-    private static final String INVALID_FORMAT_MESSAGE = "Неверный формат файла";
     private static final String FILE_PROCESSING_ERROR = "Ошибка работы с файлом ";
+    private static final String TOO_FEW_LINES_MESSAGE = "Слишком мало строк во входном файле ";
+    private static final String TOO_MANY_LINES_MESSAGE = "Слишком много строк во входном файле ";
+    private static final String FILE_IS_EMPTY_MESSAGE = "Входной файл пуст ";
     private static final Logger log = LoggerFactory.getLogger(FileReader.class);
 
-    private String firstLine;
-    private List<String> parameters;
+    private FileReader() {
 
-    public void read(String filename) throws FileException {
+    }
+
+    public static FileContent read(String filename) throws FileException {
+        FileContent fileContent = new FileContent();
         try (FileInputStream fileInputStream = new FileInputStream(filename);
              Scanner scanner = new Scanner(fileInputStream)){
 
             if(!scanner.hasNextLine()) {
-                log.error("Входной файл пуст");
-                throw new FileException(INVALID_FORMAT_MESSAGE);
+                log.error(FILE_IS_EMPTY_MESSAGE + filename);
+                throw new FileException(FILE_IS_EMPTY_MESSAGE, filename);
             }
-            firstLine = scanner.nextLine();
+            fileContent.setFirstLine(scanner.nextLine());
 
-            readParameters(scanner);
+            fileContent.setParameters(readParameters(scanner, filename));
 
             if(scanner.hasNextLine()) {
-                log.error("Слишком много строк во входном файле");
-                throw new FileException(INVALID_FORMAT_MESSAGE);
+                log.error(TOO_MANY_LINES_MESSAGE + filename);
+                throw new FileException(TOO_MANY_LINES_MESSAGE, filename);
             }
         } catch (IOException e) {
             log.error(FILE_PROCESSING_ERROR + filename + ". " + e.getMessage() + "\n" + e);
-            throw new FileException(FILE_PROCESSING_ERROR + filename, e);
+            throw new FileException(FILE_PROCESSING_ERROR, filename, e);
         }
+        return fileContent;
     }
 
-    private void readParameters(Scanner scanner) throws FileException {
+    private static List<String> readParameters(Scanner scanner, String filename) throws FileException {
         if(!scanner.hasNextLine()) {
-            log.error("В файле слишком мало строк");
-            throw new FileException(INVALID_FORMAT_MESSAGE);
+            log.error(TOO_FEW_LINES_MESSAGE + filename);
+            throw new FileException(TOO_FEW_LINES_MESSAGE, filename);
         }
         String nextLine = scanner.nextLine();
         String[] parameters = nextLine.split(FILE_SEPARATOR);
-        this.parameters = Arrays.asList(parameters);
-    }
-
-    public String getFirstLine() {
-        return firstLine;
-    }
-
-    public List<String> getParameters() {
-        return parameters;
+        return Arrays.asList(parameters);
     }
 }

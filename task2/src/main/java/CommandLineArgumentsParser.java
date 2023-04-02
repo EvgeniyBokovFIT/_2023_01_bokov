@@ -6,24 +6,28 @@ import org.slf4j.LoggerFactory;
 public class CommandLineArgumentsParser {
     private static final String OUTPUT_TO_FILE_OPTION = "f";
     private static final String OUTPUT_TO_CONSOLE_OPTION = "c";
+    private static final String OUTPUT_TO_CONSOLE_OPTION_DESC = "вывод в консоль";
+    private static final String OUTPUT_TO_FILE_OPTION_DESC = "вывод в файл";
     private static final String FILE_EXTENSION = ".txt";
+    private static final String INVALID_FILE_EXTENSION_MESSAGE = "Неверное расширение файла ";
+    private static final String INPUT_FILENAME_MISSING_MESSAGE = "В командной строке отсутствует название входного файла";
+
     private static final Logger log = LoggerFactory.getLogger(CommandLineArgumentsParser.class);
 
     private String outputFilename;
-    private String inputFilename;
+    private final String inputFilename;
     private OutputType outputType;
     private Options options;
 
-    public void parse(String[] args) throws ParseException {
+    public CommandLineArgumentsParser(String[] args) throws ParseException {
         CommandLineParser parser = new DefaultParser();
         initOptions();
 
         CommandLine commandLine = parser.parse(this.options, args);
 
         if(commandLine.getArgList().size() < 1) {
-            final String inputFilenameMissingMessage = "В командной строке отсутствует название входного файла";
-            log.error(inputFilenameMissingMessage);
-            throw new ParseException(inputFilenameMissingMessage);
+            log.error(INPUT_FILENAME_MISSING_MESSAGE);
+            throw new ParseException(INPUT_FILENAME_MISSING_MESSAGE);
         }
 
         outputType = OutputType.CONSOLE;
@@ -51,12 +55,12 @@ public class CommandLineArgumentsParser {
         this.options = new Options();
         OptionGroup outputStream = new OptionGroup();
         outputStream.addOption(Option.builder(OUTPUT_TO_CONSOLE_OPTION)
-                .desc("вывод в консоль")
+                .desc(OUTPUT_TO_CONSOLE_OPTION_DESC)
                 .build());
         outputStream.addOption(Option.builder(OUTPUT_TO_FILE_OPTION)
                 .argName("outfile")
                 .hasArg()
-                .desc("вывод в файл")
+                .desc(OUTPUT_TO_FILE_OPTION_DESC)
                 .build());
         outputStream.setRequired(false);
         this.options.addOptionGroup(outputStream);
@@ -64,9 +68,8 @@ public class CommandLineArgumentsParser {
 
     private String parseFilename(String filename) {
         if(!filename.endsWith(FILE_EXTENSION)) {
-            final String invalidFileExtensionMessage = "Неверное расширение файла";
-            log.error(invalidFileExtensionMessage + ". Название файла: \"{}\"", filename);
-            throw new FileException(invalidFileExtensionMessage);
+            log.error(INVALID_FILE_EXTENSION_MESSAGE + filename);
+            throw new FileException(INVALID_FILE_EXTENSION_MESSAGE, filename);
         }
         return filename;
     }

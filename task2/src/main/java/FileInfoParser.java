@@ -6,10 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileInfoParser {
+    private static final String PARAMETER_IS_NOT_A_NUMBER_MESSAGE =
+            "Один или несколько параметров фигуры не являются числами";
+    private static final String PARAMETER_IS_NEGATIVE_NUMBER_MESSAGE =
+            "Один или несколько параметров фигуры являются отрицательными числами";
     private static final Logger log = LoggerFactory.getLogger(Service.class);
 
-    private ShapeType shapeType;
-    private List<Double> parameters;
+    private final ShapeType shapeType;
+    private final List<Double> parameters;
 
     public ShapeType getShapeType() {
         return shapeType;
@@ -19,30 +23,26 @@ public class FileInfoParser {
         return parameters;
     }
 
-    public void parse(String firstLine, List<String> parameters) {
-        this.parameters = toShapeParameters(parameters);
-        this.shapeType = ShapeType.getByName(firstLine);
+    public FileInfoParser(FileContent fileContent) {
+        this.parameters = toShapeParameters(fileContent.getParameters());
+        this.shapeType = ShapeType.getByName(fileContent.getFirstLine());
     }
 
-    private List<Double> toShapeParameters(List<String> parameters) {
-        List<Double> doubles = new ArrayList<>();
+    private static List<Double> toShapeParameters(List<String> parameters) {
+        List<Double> shapeParameters = new ArrayList<>();
         try {
-            for (var parameter: parameters) {
-                double curDouble = Double.parseDouble(parameter);
-                addDoubleToList(doubles, curDouble);
-            }
+            parameters.forEach(p -> addDoubleToList(shapeParameters, Double.parseDouble(p)));
         } catch (NumberFormatException e) {
-            log.error("Параметр фигуры не является числом. " + e.getMessage() + "\n" + e);
-            throw new IllegalArgumentException("Один или несколько параметров фигуры не являются числами", e);
+            log.error(PARAMETER_IS_NOT_A_NUMBER_MESSAGE + ". " + e.getMessage() + "\n" + e);
+            throw new IllegalArgumentException(PARAMETER_IS_NOT_A_NUMBER_MESSAGE, e);
         }
-        return doubles;
+        return shapeParameters;
     }
 
-    private void addDoubleToList(List<Double> shapeParameters, double curDouble) {
+    private static void addDoubleToList(List<Double> shapeParameters, Double curDouble) {
         if(curDouble < 0) {
-            log.error("Неверный параметр фигуры: \"{}\"", curDouble);
-            throw new IllegalArgumentException(
-                    "Один или несколько параметров фигуры являются отрицательными числами");
+            log.error(PARAMETER_IS_NEGATIVE_NUMBER_MESSAGE + ": " + curDouble);
+            throw new IllegalArgumentException(PARAMETER_IS_NEGATIVE_NUMBER_MESSAGE);
         }
         shapeParameters.add(curDouble);
     }
