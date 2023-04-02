@@ -9,6 +9,8 @@ import java.text.DecimalFormat;
 public class Triangle extends Shape{
     private static final String ANGLE_UNITS = "градусов";
     public static final Integer ARGS_COUNT = 3;
+    private static final String INVALID_SIDES_MESSAGE =
+            "Одна сторона треугольника не может быть больше суммы двух других сторон";
     private static final Logger log = LoggerFactory.getLogger(Triangle.class);
 
     private final double firstSide;
@@ -19,6 +21,11 @@ public class Triangle extends Shape{
         super("Треугольник");
         if(firstSide < 0 || secondSide < 0 || thirdSide < 0) {
             throw new ShapeException(NEGATIVE_ARGS_MESSAGE);
+        }
+        if(firstSide > secondSide + thirdSide ||
+                secondSide > firstSide + thirdSide ||
+                thirdSide > secondSide + firstSide) {
+            throw new ShapeException(INVALID_SIDES_MESSAGE);
         }
         this.firstSide = firstSide;
         this.secondSide = secondSide;
