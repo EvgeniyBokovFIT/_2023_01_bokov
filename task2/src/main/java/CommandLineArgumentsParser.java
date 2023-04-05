@@ -17,14 +17,9 @@ public class CommandLineArgumentsParser {
     private String outputFilename;
     private final String inputFilename;
     private OutputType outputType;
-    private Options options;
 
     public CommandLineArgumentsParser(String[] args) throws ParseException {
-        CommandLineParser parser = new DefaultParser();
-        initOptions();
-
-        CommandLine commandLine = parser.parse(this.options, args);
-
+        CommandLine commandLine = new DefaultParser().parse(initOptions(), args);
         if(commandLine.getArgList().size() < 1) {
             log.error(INPUT_FILENAME_MISSING_MESSAGE);
             throw new ParseException(INPUT_FILENAME_MISSING_MESSAGE);
@@ -51,8 +46,8 @@ public class CommandLineArgumentsParser {
         return outputType;
     }
 
-    private void initOptions() {
-        this.options = new Options();
+    private static Options initOptions() {
+        Options options = new Options();
         OptionGroup outputStream = new OptionGroup();
         outputStream.addOption(Option.builder(OUTPUT_TO_CONSOLE_OPTION)
                 .desc(OUTPUT_TO_CONSOLE_OPTION_DESC)
@@ -63,7 +58,8 @@ public class CommandLineArgumentsParser {
                 .desc(OUTPUT_TO_FILE_OPTION_DESC)
                 .build());
         outputStream.setRequired(false);
-        this.options.addOptionGroup(outputStream);
+        options.addOptionGroup(outputStream);
+        return options;
     }
 
     private String parseFilename(String filename) {

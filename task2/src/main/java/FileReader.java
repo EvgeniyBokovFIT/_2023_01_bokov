@@ -21,7 +21,6 @@ public class FileReader {
     }
 
     public static FileContent read(String filename) throws FileException {
-        FileContent fileContent = new FileContent();
         try (FileInputStream fileInputStream = new FileInputStream(filename);
              Scanner scanner = new Scanner(fileInputStream)){
 
@@ -29,19 +28,17 @@ public class FileReader {
                 log.error(FILE_IS_EMPTY_MESSAGE + filename);
                 throw new FileException(FILE_IS_EMPTY_MESSAGE, filename);
             }
-            fileContent.setFirstLine(scanner.nextLine());
-
-            fileContent.setParameters(readParameters(scanner, filename));
+            FileContent fileContent = new FileContent(scanner.nextLine(), readParameters(scanner, filename));
 
             if(scanner.hasNextLine()) {
                 log.error(TOO_MANY_LINES_MESSAGE + filename);
                 throw new FileException(TOO_MANY_LINES_MESSAGE, filename);
             }
+            return fileContent;
         } catch (IOException e) {
             log.error(FILE_PROCESSING_ERROR + filename + ". " + e.getMessage() + "\n" + e);
             throw new FileException(FILE_PROCESSING_ERROR, filename, e);
         }
-        return fileContent;
     }
 
     private static List<String> readParameters(Scanner scanner, String filename) throws FileException {
