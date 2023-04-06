@@ -10,5 +10,4 @@ public class FileException extends RuntimeException{
     public FileException(String message, String filename, Exception cause) {
         super(message + FILENAME_MESSAGE + filename, cause);
     }
-
 }

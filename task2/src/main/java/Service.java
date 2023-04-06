@@ -18,8 +18,8 @@ public class Service {
             "Ошибка парсинга командной строки. ";
     private static final String SHAPE_CREATED_SUCCESSFULLY_MESSAGE =
             "Фигура успешно создана." + "Введенный тип фигуры: {} ." + "Введенные параметры: {}";
-    private static final ShapeFactory shapeFactory = new ShapeFactory();
     private static final Logger log = LoggerFactory.getLogger(Service.class);
+    private final ShapeFactory shapeFactory = new ShapeFactory();
 
     public void doWork(String[] args) {
         try {
