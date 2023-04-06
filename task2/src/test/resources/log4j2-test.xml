@@ -1,0 +1,7 @@
+<Configuration status="INFO">
+    <Loggers>
+        <Root level="off">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
