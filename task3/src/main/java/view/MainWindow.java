@@ -1,12 +1,20 @@
 package view;
 
+import model.CellState;
+import model.GameInfo;
+import model.listener.FieldUpdateListener;
+import model.listener.MinesCountListener;
+import model.listener.NewGameListener;
+import model.listener.TimerListener;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class MainWindow extends JFrame {
+public class MainWindow extends JFrame implements
+        TimerListener, FieldUpdateListener, MinesCountListener, NewGameListener {
     private final Container contentPane;
     private final GridBagLayout mainLayout;
 
@@ -185,5 +193,46 @@ public class MainWindow extends JFrame {
         gbc.weightx = 0.1;
         mainLayout.setConstraints(label, gbc);
         contentPane.add(label);
+    }
+
+    @Override
+    public void onTimerUpdate(int seconds) {
+        this.setTimerValue(seconds);
+    }
+
+    @Override
+    public void onFieldUpdate(CellState[][] field, GameInfo gameInfo) {
+        for (int y = 0; y < gameInfo.fieldHeight(); y++) {
+            for (int x = 0; x < gameInfo.fieldWidth(); x++) {
+                this.setCellImage(x, y, getGameImageByCellState(field[y][x]));
+            }
+        }
+    }
+
+    private static GameImage getGameImageByCellState(CellState cellState) {
+        return switch (cellState) {
+            case MINES_NEARBY_1 -> GameImage.NUM_1;
+            case MINES_NEARBY_2 -> GameImage.NUM_2;
+            case MINES_NEARBY_3 -> GameImage.NUM_3;
+            case MINES_NEARBY_4 -> GameImage.NUM_4;
+            case MINES_NEARBY_5 -> GameImage.NUM_5;
+            case MINES_NEARBY_6 -> GameImage.NUM_6;
+            case MINES_NEARBY_7 -> GameImage.NUM_7;
+            case MINES_NEARBY_8 -> GameImage.NUM_8;
+            case FLAG -> GameImage.MARKED;
+            case MINE -> GameImage.BOMB;
+            case UNKNOWN -> GameImage.CLOSED;
+            case EMPTY -> GameImage.EMPTY;
+        };
+    }
+
+    @Override
+    public void onMinesCountChanges(int minesCount) {
+        this.setBombsCount(minesCount);
+    }
+
+    @Override
+    public void onGameCreating(int fieldHeight, int fieldWidth) {
+        this.createGameField(fieldHeight, fieldWidth);
     }
 }

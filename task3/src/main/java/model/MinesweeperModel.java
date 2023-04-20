@@ -1,9 +1,8 @@
 package model;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import model.listener.*;
+
+import java.util.*;
 
 public class MinesweeperModel{
     private GameInfo gameInfo;
@@ -16,12 +15,17 @@ public class MinesweeperModel{
     private GameWonListener gameWonListener;
     private NewGameListener newGameListener;
     private MinesCountListener minesCountListener;
+    private TimerListener timerListener;
+    private Timer timer;
 
     public void setGameInfo(GameInfo gameInfo) {
         this.gameInfo = gameInfo;
     }
 
     public void createNewGame() {
+        if(timer != null) {
+            timer.cancel();
+        }
         this.openCellsCount = 0;
         this.flagsRemaining = this.gameInfo.minesCount();
         int fieldHeight = this.gameInfo.fieldHeight();
@@ -43,7 +47,7 @@ public class MinesweeperModel{
 
     private void notifyNewGameListener() {
         if (this.newGameListener != null) {
-            this.newGameListener.onGameCreating(this.gameInfo);
+            this.newGameListener.onGameCreating(this.gameInfo.fieldHeight(), this.gameInfo.fieldWidth());
         }
     }
 
@@ -73,10 +77,19 @@ public class MinesweeperModel{
         this.openCellsCount++;
         if (this.openCellsCount == 1) {
             generateMinesLocations(cellLocation);
+            this.timer = new Timer();
+            this.timer.scheduleAtFixedRate(new TimerTask() {
+                private int seconds = 0;
+                @Override
+                public void run() {
+                    timerListener.onTimerUpdate(this.seconds++);
+                }
+            }, 0, 1000);
         }
 
         if (this.minesLocations.contains(new Location(CellX, CellY))) {
             this.minesLocations.forEach(location -> this.userField[location.y()][location.x()] = CellState.MINE);
+            this.timer.cancel();
             notifyFieldUpdateListener();
             notifyGameLostListener();
             return;
@@ -205,5 +218,9 @@ public class MinesweeperModel{
 
     public void setMinesCountListener(MinesCountListener minesCountListener) {
         this.minesCountListener = minesCountListener;
+    }
+
+    public void setTimerListener(TimerListener timerListener) {
+        this.timerListener = timerListener;
     }
 }

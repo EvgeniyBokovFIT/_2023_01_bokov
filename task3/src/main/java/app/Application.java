@@ -1,9 +1,6 @@
 package app;
 
 import controller.Controller;
-import listener.MyFieldUpdateListener;
-import listener.MyMinesCountListener;
-import listener.MyNewGameListener;
 import model.MinesweeperModel;
 import view.*;
 
@@ -17,10 +14,11 @@ public class Application {
 
         MinesweeperModel model = new MinesweeperModel();
         model.setGameLostListener(() -> loseWindow.setVisible(true));
-        model.setCellOpenListener(new MyFieldUpdateListener(mainWindow));
+        model.setCellOpenListener(mainWindow);
         model.setGameWonListener(() -> winWindow.setVisible(true));
-        model.setNewGameListener(new MyNewGameListener(mainWindow));
-        model.setMinesCountListener(new MyMinesCountListener(mainWindow));
+        model.setNewGameListener(mainWindow);
+        model.setMinesCountListener(mainWindow);
+        model.setTimerListener(mainWindow);
         Controller controller = new Controller(model);
 
         mainWindow.setNewGameMenuAction(actionEvent -> controller.handleNewGame());
