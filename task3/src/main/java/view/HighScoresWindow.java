@@ -1,9 +1,15 @@
 package view;
 
+import model.GameInfo;
+import model.listener.HighScoresListener;
+import model.record.Record;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+import java.util.Optional;
 
-public class HighScoresWindow extends JDialog {
+public class HighScoresWindow extends JDialog implements HighScoresListener {
     public static final String DEFAULT_RECORD_TEXT = "Unknown - 999";
 
     private final JLabel noviceRecordLabel;
@@ -85,5 +91,29 @@ public class HighScoresWindow extends JDialog {
         layout.setConstraints(okButton, gbc);
 
         return okButton;
+    }
+
+    @Override
+    public void onHighScoresUpdate(List<Record> records) {
+        Optional<Record> noviceRecord = findRecordByGameType(GameType.NOVICE, records);
+        noviceRecord.ifPresent(record -> this.setNoviceRecord(record.username(), record.timeSeconds()));
+
+        Optional<Record> mediumRecord = findRecordByGameType(GameType.MEDIUM, records);
+        mediumRecord.ifPresent(record -> this.setMediumRecord(record.username(), record.timeSeconds()));
+
+        Optional<Record> expertRecord = findRecordByGameType(GameType.EXPERT, records);
+        expertRecord.ifPresent(record -> this.setExpertRecord(record.username(), record.timeSeconds()));
+    }
+
+    private boolean gameInfoCorrespondsGameType(GameInfo gameInfo, GameType gameType) {
+        return gameInfo.fieldHeight() == gameType.getFieldHeight() &&
+                gameInfo.fieldWidth() == gameType.getFieldWidth() &&
+                gameInfo.minesCount() == gameType.getBombsCount();
+    }
+
+    private Optional<Record> findRecordByGameType(GameType gameType, List<Record> records) {
+        return records.stream()
+                .filter(record -> gameInfoCorrespondsGameType(record.gameInfo(), gameType))
+                .findFirst();
     }
 }

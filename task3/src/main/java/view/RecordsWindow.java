@@ -1,9 +1,11 @@
 package view;
 
+import model.listener.RecordListener;
+
 import javax.swing.*;
 import java.awt.*;
 
-public class RecordsWindow extends JDialog {
+public class RecordsWindow extends JDialog implements RecordListener {
     private RecordNameListener nameListener;
 
     public RecordsWindow(JFrame frame) {
@@ -24,7 +26,7 @@ public class RecordsWindow extends JDialog {
         setResizable(false);
         pack();
         setLocationRelativeTo(null);
-        setVisible(true);
+        setVisible(false);
     }
 
     public void setNameListener(RecordNameListener nameListener) {
@@ -41,5 +43,10 @@ public class RecordsWindow extends JDialog {
             }
         });
         return button;
+    }
+
+    @Override
+    public void onNewRecord() {
+        this.setVisible(true);
     }
 }

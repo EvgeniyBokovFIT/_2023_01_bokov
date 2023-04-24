@@ -227,12 +227,13 @@ public class MainWindow extends JFrame implements
     }
 
     @Override
-    public void onMinesCountChanges(int minesCount) {
+    public void onMinesCountUpdate(int minesCount) {
         this.setBombsCount(minesCount);
     }
 
     @Override
-    public void onGameCreating(int fieldHeight, int fieldWidth) {
-        this.createGameField(fieldHeight, fieldWidth);
+    public void onGameCreating(GameInfo gameInfo) {
+        this.createGameField(gameInfo.fieldHeight(), gameInfo.fieldWidth());
+        this.setBombsCount(gameInfo.minesCount());
     }
 }

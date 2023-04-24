@@ -1,5 +1,7 @@
 package model.listener;
 
+import model.GameInfo;
+
 public interface NewGameListener {
-    void onGameCreating(int gameHeight, int gameWidth);
+    void onGameCreating(GameInfo gameInfo);
 }

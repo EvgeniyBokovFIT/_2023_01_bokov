@@ -7,12 +7,12 @@ public enum GameType {
 
     private final int fieldHeight;
     private final int fieldWidth;
-    private final int minesCount;
+    private final int bombsCount;
 
-    GameType(int fieldHeight, int fieldWidth, int minesCount) {
+    GameType(int fieldHeight, int fieldWidth, int bombsCount) {
         this.fieldHeight = fieldHeight;
         this.fieldWidth = fieldWidth;
-        this.minesCount = minesCount;
+        this.bombsCount = bombsCount;
     }
 
     public int getFieldHeight() {
@@ -23,7 +23,7 @@ public enum GameType {
         return fieldWidth;
     }
 
-    public int getMinesCount() {
-        return minesCount;
+    public int getBombsCount() {
+        return bombsCount;
     }
 }

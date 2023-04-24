@@ -11,34 +11,38 @@ public class Controller {
 
     public Controller(MinesweeperModel model) {
         this.model = model;
-        model.setGameInfo(new GameInfo(
-                GameType.NOVICE.getFieldHeight(), GameType.NOVICE.getFieldWidth(), GameType.NOVICE.getMinesCount()));
-        model.createNewGame();
+        this.model.setGameInfo(new GameInfo(
+                GameType.NOVICE.getFieldHeight(), GameType.NOVICE.getFieldWidth(), GameType.NOVICE.getBombsCount()));
+        this.model.createNewGame();
     }
 
     public void handleCellClick(int x, int y, ButtonType buttonType) {
         if (buttonType.equals(ButtonType.LEFT_BUTTON)) {
-            model.openCell(new Location(x, y));
+            this.model.openCell(new Location(x, y));
             return;
         }
 
         if (buttonType.equals(ButtonType.RIGHT_BUTTON)) {
-            model.markCellWithFlag(new Location(x, y));
+            this.model.markCellWithFlag(new Location(x, y));
             return;
         }
 
         if (buttonType.equals(ButtonType.MIDDLE_BUTTON)) {
-            model.openCellsNearbyIfMinesMarked(new Location(x, y));
+            this.model.openCellsNearbyIfMinesMarked(new Location(x, y));
         }
     }
 
     public void handleGameTypeChange(GameType gameType) {
-        model.setGameInfo(new GameInfo(
-                gameType.getFieldHeight(), gameType.getFieldWidth(), gameType.getMinesCount()));
-        model.createNewGame();
+        this.model.setGameInfo(new GameInfo(
+                gameType.getFieldHeight(), gameType.getFieldWidth(), gameType.getBombsCount()));
+        this.model.createNewGame();
     }
 
     public void handleNewGame() {
-        model.createNewGame();
+        this.model.createNewGame();
+    }
+
+    public void handleUsernameRecord(String username) {
+        this.model.writeRecord(username);
     }
 }

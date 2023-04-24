@@ -11,23 +11,25 @@ public class Application {
         HighScoresWindow highScoresWindow = new HighScoresWindow(mainWindow);
         LoseWindow loseWindow = new LoseWindow(mainWindow);
         WinWindow winWindow = new WinWindow(mainWindow);
+        RecordsWindow recordsWindow = new RecordsWindow(mainWindow);
 
         MinesweeperModel model = new MinesweeperModel();
-        model.setGameLostListener(() -> loseWindow.setVisible(true));
-        model.setCellOpenListener(mainWindow);
-        model.setGameWonListener(() -> winWindow.setVisible(true));
-        model.setNewGameListener(mainWindow);
-        model.setMinesCountListener(mainWindow);
-        model.setTimerListener(mainWindow);
+        model.addGameLostListener(() -> loseWindow.setVisible(true));
+        model.addFieldUpdateListener(mainWindow);
+        model.addGameWonListener(() -> winWindow.setVisible(true));
+        model.addMinesCountListener(mainWindow);
+        model.addTimerListener(mainWindow);
+        model.addRecordListener(recordsWindow);
+        model.addHighScoresListener(highScoresWindow);
+        model.addNewGameListener(mainWindow);
         Controller controller = new Controller(model);
 
+        mainWindow.setVisible(true);
         mainWindow.setNewGameMenuAction(actionEvent -> controller.handleNewGame());
         mainWindow.setSettingsMenuAction(e -> settingsWindow.setVisible(true));
         mainWindow.setHighScoresMenuAction(e -> highScoresWindow.setVisible(true));
         mainWindow.setExitMenuAction(e -> mainWindow.dispose());
-
         mainWindow.setCellListener(controller::handleCellClick);
-        mainWindow.setVisible(true);
 
         settingsWindow.setGameTypeListener(controller::handleGameTypeChange);
 
@@ -36,5 +38,7 @@ public class Application {
 
         winWindow.setNewGameListener(e -> controller.handleNewGame());
         winWindow.setExitListener(e -> mainWindow.dispose());
+
+        recordsWindow.setNameListener(controller::handleUsernameRecord);
     }
 }
