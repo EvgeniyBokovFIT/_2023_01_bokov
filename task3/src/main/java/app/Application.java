@@ -1,6 +1,7 @@
 package app;
 
 import controller.Controller;
+import model.DefaultMinesweeperModel;
 import model.MinesweeperModel;
 import view.*;
 
@@ -13,10 +14,10 @@ public class Application {
         WinWindow winWindow = new WinWindow(mainWindow);
         RecordsWindow recordsWindow = new RecordsWindow(mainWindow);
 
-        MinesweeperModel model = new MinesweeperModel();
-        model.addGameLostListener(() -> loseWindow.setVisible(true));
+        MinesweeperModel model = new DefaultMinesweeperModel();
+        model.addGameLostListener(loseWindow);
         model.addFieldUpdateListener(mainWindow);
-        model.addGameWonListener(() -> winWindow.setVisible(true));
+        model.addGameWonListener(winWindow);
         model.addMinesCountListener(mainWindow);
         model.addTimerListener(mainWindow);
         model.addRecordListener(recordsWindow);

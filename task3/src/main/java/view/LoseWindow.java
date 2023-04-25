@@ -1,10 +1,12 @@
 package view;
 
+import model.listener.GameLostListener;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-public class LoseWindow extends JDialog {
+public class LoseWindow extends JDialog implements GameLostListener {
     private ActionListener newGameListener;
     private ActionListener exitListener;
 
@@ -96,5 +98,10 @@ public class LoseWindow extends JDialog {
         layout.setConstraints(exitButton, gbc);
 
         return exitButton;
+    }
+
+    @Override
+    public void onGameLost() {
+        this.setVisible(true);
     }
 }

@@ -1,10 +1,12 @@
 package view;
 
+import model.listener.GameWonListener;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-public class WinWindow extends JDialog {
+public class WinWindow extends JDialog implements GameWonListener {
     private ActionListener newGameListener;
     private ActionListener exitListener;
 
@@ -96,5 +98,10 @@ public class WinWindow extends JDialog {
         layout.setConstraints(exitButton, gbc);
 
         return exitButton;
+    }
+
+    @Override
+    public void onGameWon() {
+        this.setVisible(true);
     }
 }
