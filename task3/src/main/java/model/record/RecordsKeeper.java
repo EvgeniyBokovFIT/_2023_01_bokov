@@ -36,12 +36,8 @@ public class RecordsKeeper {
     }
 
     public boolean isRecordBeaten(GameInfo gameInfo, int timeSeconds) {
-        if (this.records.stream().noneMatch(record -> record.gameInfo().equals(gameInfo))) {
-            return true;
-        }
         return this.records.stream()
-                .anyMatch(record ->
-                        record.gameInfo().equals(gameInfo) && timeSeconds < record.timeSeconds());
+                .allMatch(record -> !record.gameInfo().equals(gameInfo) || timeSeconds < record.timeSeconds());
     }
 
     private List<Record> readRecords() {
