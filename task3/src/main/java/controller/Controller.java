@@ -11,9 +11,8 @@ public class Controller {
 
     public Controller(MinesweeperModel model) {
         this.model = model;
-        this.model.setGameInfo(new GameInfo(
+        this.model.initGame(new GameInfo(
                 GameType.NOVICE.getFieldHeight(), GameType.NOVICE.getFieldWidth(), GameType.NOVICE.getBombsCount()));
-        this.model.createNewGame();
     }
 
     public void handleCellClick(int x, int y, ButtonType buttonType) {
@@ -33,13 +32,12 @@ public class Controller {
     }
 
     public void handleGameTypeChange(GameType gameType) {
-        this.model.setGameInfo(new GameInfo(
+        this.model.initGame(new GameInfo(
                 gameType.getFieldHeight(), gameType.getFieldWidth(), gameType.getBombsCount()));
-        this.model.createNewGame();
     }
 
     public void handleNewGame() {
-        this.model.createNewGame();
+        this.model.initGame();
     }
 
     public void handleUsernameRecord(String username) {

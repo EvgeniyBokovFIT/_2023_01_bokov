@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class RecordsKeeper {
@@ -15,7 +16,7 @@ public class RecordsKeeper {
     private final List<Record> records;
 
     public RecordsKeeper() {
-        this.records = readRecords();
+        this.records = new ArrayList<>(readRecords());
     }
 
     public void updateRecordIfBeaten(Record gameResult) {
@@ -43,15 +44,15 @@ public class RecordsKeeper {
     private List<Record> readRecords() {
         File recordsFile = new File(RECORDS_PATH);
         if(!recordsFile.exists()) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return new ArrayList<>(Arrays.asList(objectMapper.readValue(recordsFile, Record[].class)));
+            return Arrays.asList(objectMapper.readValue(recordsFile, Record[].class));
         } catch (IOException e) {
             System.err.println(RECORDS_FILE_ERROR + e);
         }
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     public List<Record> getRecords() {

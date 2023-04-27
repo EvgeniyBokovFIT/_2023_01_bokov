@@ -1,8 +1,8 @@
 package model.listener;
 
-import model.CellState;
+import model.Cell;
 import model.GameInfo;
 
 public interface FieldUpdateListener {
-    void onFieldUpdate(CellState[][] field, GameInfo gameInfo);
+    void onFieldUpdate(Cell[][] field, GameInfo gameInfo);
 }

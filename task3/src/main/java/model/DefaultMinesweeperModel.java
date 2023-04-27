@@ -4,15 +4,16 @@ import model.listener.*;
 import model.record.Record;
 import model.record.RecordsKeeper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class DefaultMinesweeperModel implements MinesweeperModel{
     private GameInfo gameInfo;
-    private CellState[][] userField;
+    private Cell[][] gameField;
     private int openCellsCount;
     private int flagsRemaining;
-    private boolean gameIsOngoing;
-    private Set<Location> mineLocations;
+    private GameState gameState;
     private final List<GameLostListener> gameLostListeners;
     private final List<FieldUpdateListener> fieldUpdateListeners;
     private final List<GameWonListener> gameWonListeners;
@@ -24,7 +25,6 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
     private final RecordsKeeper recordsKeeper;
 
     public DefaultMinesweeperModel() {
-        this.mineLocations = new HashSet<>();
         this.gameLostListeners = new ArrayList<>();
         this.fieldUpdateListeners = new ArrayList<>();
         this.gameWonListeners = new ArrayList<>();
@@ -34,11 +34,7 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
         this.highScoresListeners = new ArrayList<>();
         this.timer = new MyTimer();
         this.recordsKeeper = new RecordsKeeper();
-    }
-
-    @Override
-    public void setGameInfo(GameInfo gameInfo) {
-        this.gameInfo = gameInfo;
+        this.gameState = GameState.NONE;
     }
 
     @Override
@@ -84,7 +80,7 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
 
     private void notifyFieldUpdateListeners() {
         this.fieldUpdateListeners.forEach(fieldUpdateListener ->
-                fieldUpdateListener.onFieldUpdate(this.userField, this.gameInfo));
+                fieldUpdateListener.onFieldUpdate(this.gameField, this.gameInfo));
     }
 
     private void notifyMinesCountListeners(int minesCount) {
@@ -94,8 +90,7 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
 
     private void notifyNewGameListeners() {
         this.newGameListeners
-                .forEach(newGameListener ->
-                        newGameListener.onGameCreating(this.gameInfo));
+                .forEach(newGameListener -> newGameListener.onGameCreating(this.gameInfo));
     }
 
     private void notifyGameLostListeners() {
@@ -115,88 +110,110 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
     }
 
     @Override
-    public void createNewGame() {
+    public void initGame(GameInfo gameInfo) {
+        this.gameState = GameState.NONE;
+        this.gameInfo = gameInfo;
         this.timer.stop();
         this.openCellsCount = 0;
         this.flagsRemaining = this.gameInfo.minesCount();
-        int fieldHeight = this.gameInfo.fieldHeight();
-        int fieldWidth = this.gameInfo.fieldWidth();
-        this.userField = new CellState[fieldHeight][fieldWidth];
-        for (int i = 0; i < fieldHeight; i++) {
-            Arrays.fill(this.userField[i], CellState.UNKNOWN);
-        }
-
+        //инициализирую поле до первого открытия ячейки, так как пользователь может поставить флаг до начала игры
+        initGameField();
         notifyNewGameListeners();
+    }
+
+    @Override
+    public void initGame() {
+        initGame(this.gameInfo);
     }
 
     @Override
     public void openCell(Location cellLocation) {
         int cellX = cellLocation.x();
         int cellY = cellLocation.y();
-        if (!this.userField[cellY][cellX].equals(CellState.UNKNOWN)) {
+        if (this.gameState.equals(GameState.NONE) &&
+                this.gameField[cellY][cellX].getCellState().equals(CellState.CLOSED)) {
+            startGame(cellLocation);
+        }
+
+        if (!this.gameState.equals(GameState.RUNNING)) {
             return;
         }
 
-        this.openCellsCount++;
-        if (this.openCellsCount == 1) {
-            this.mineLocations = generateMineLocations(cellLocation);
-            this.timer.start();
-            this.gameIsOngoing = true;
-        }
-        if(!this.gameIsOngoing) {
+        if (!this.gameField[cellY][cellX].getCellState().equals(CellState.CLOSED)) {
             return;
         }
 
-        boolean isGameLost = this.mineLocations.contains(cellLocation);
-        if (isGameLost) {
+        if (this.gameField[cellY][cellX].isArmed()) {
             finishLostGame();
             return;
         }
-
+        this.openCellsCount++;
         int minesNearby = countMinesNearby(cellLocation);
-        this.userField[cellY][cellX] = CellState.getByMinesNearbyCount(minesNearby);
+        this.gameField[cellY][cellX].setMinesNearbyCount(minesNearby);
+        this.gameField[cellY][cellX].setCellState(CellState.OPEN);
         if (minesNearby == 0) {
             openCellsNearby(cellLocation);
         }
         notifyFieldUpdateListeners();
-        if (this.gameIsOngoing && isGameWon()) {
+        if (this.gameState.equals(GameState.RUNNING) && allEmptyCellsOpen()) {
             finishWonGame();
         }
     }
 
+    private void startGame(Location cellLocation) {
+        generateMineLocations(cellLocation);
+        this.timer.start();
+        this.gameState = GameState.RUNNING;
+    }
+
+    private void initGameField() {
+        int fieldHeight = this.gameInfo.fieldHeight();
+        int fieldWidth = this.gameInfo.fieldWidth();
+        this.gameField = new Cell[fieldHeight][fieldWidth];
+        for (int x = 0; x < fieldWidth; x++) {
+            for (int y = 0; y < fieldHeight; y++) {
+                this.gameField[y][x] = new Cell(CellState.CLOSED, 0, false);
+            }
+        }
+    }
+
     private void finishWonGame() {
-        this.gameIsOngoing = false;
+        this.gameState = GameState.WON;
         this.timer.stop();
-        if(this.recordsKeeper.isRecordBeaten(this.gameInfo, this.timer.getSeconds())) {
+        if (this.recordsKeeper.isRecordBeaten(this.gameInfo, this.timer.getSeconds())) {
             notifyRecordListeners();
         }
         notifyGameWonListeners();
     }
 
     private void finishLostGame() {
-        this.gameIsOngoing = false;
-        this.mineLocations.forEach(location -> this.userField[location.y()][location.x()] = CellState.MINE);
+        this.gameState = GameState.LOST;
+        for (int x = 0; x < this.gameInfo.fieldWidth(); x++) {
+            for (int y = 0; y < this.gameInfo.fieldHeight(); y++) {
+                this.gameField[y][x].setCellState(CellState.OPEN);
+            }
+        }
         this.timer.stop();
         notifyFieldUpdateListeners();
         notifyGameLostListeners();
     }
 
-    private Set<Location> generateMineLocations(Location firstTurnLocation) {
+    private void generateMineLocations(Location firstTurnLocation) {
         List<Location> possibleLocations = new ArrayList<>();
         for (int y = 0; y < this.gameInfo.fieldHeight(); y++) {
             for (int x = 0; x < this.gameInfo.fieldWidth(); x++) {
-                Location nextLocation = new Location(x, y);
-                if(!nextLocation.equals(firstTurnLocation)) {
-                    possibleLocations.add(nextLocation);
+                if (x != firstTurnLocation.x() || y != firstTurnLocation.y()) {
+                    possibleLocations.add(new Location(x, y));
                 }
             }
         }
         Collections.shuffle(possibleLocations);
-
-        return new HashSet<>(possibleLocations.subList(0, this.gameInfo.minesCount()));
+        for (Location location : possibleLocations.subList(0, this.gameInfo.minesCount())) {
+            this.gameField[location.y()][location.x()].setArmed(true);
+        }
     }
 
-    private boolean isGameWon() {
+    private boolean allEmptyCellsOpen() {
         return this.openCellsCount + this.gameInfo.minesCount() ==
                 this.gameInfo.fieldHeight() * this.gameInfo.fieldWidth();
     }
@@ -211,8 +228,7 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
         int minesNearbyCount = 0;
         for (int x = curCellX - 1; x <= curCellX + 1; x++) {
             for (int y = curCellY - 1; y <= curCellY + 1; y++) {
-                if (isValidLocation(x, y) && (x != curCellX || y != curCellY) &&
-                        this.mineLocations.contains(new Location(x, y))) {
+                if (isValidLocation(x, y) && (x != curCellX || y != curCellY) && this.gameField[y][x].isArmed()) {
                     minesNearbyCount++;
                 }
             }
@@ -225,7 +241,7 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
         int cellY = location.y();
         for (int x = cellX - 1; x <= cellX + 1; x++) {
             for (int y = cellY - 1; y <= cellY + 1; y++) {
-                if (isValidLocation(x, y) && (x != cellX || y != cellY) && this.gameIsOngoing) {
+                if (isValidLocation(x, y) && (x != cellX || y != cellY) && this.gameState.equals(GameState.RUNNING)) {
                     openCell(new Location(x, y));
                 }
             }
@@ -234,25 +250,25 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
 
     @Override
     public void markCellWithFlag(Location location) {
-        if(!this.gameIsOngoing && this.openCellsCount != 0) {
+        if (this.gameState.equals(GameState.LOST) || this.gameState.equals(GameState.WON)) {
             return;
         }
 
         int x = location.x();
         int y = location.y();
-        CellState cellState = this.userField[y][x];
+        CellState cellState = this.gameField[y][x].getCellState();
 
-        if (cellState.equals(CellState.UNKNOWN) && this.flagsRemaining > 0) {
+        if (cellState.equals(CellState.CLOSED) && this.flagsRemaining > 0) {
             this.flagsRemaining--;
-            this.userField[y][x] = CellState.FLAG;
+            this.gameField[y][x].setCellState(CellState.MARKED);
             notifyFieldUpdateListeners();
             notifyMinesCountListeners(this.flagsRemaining);
             return;
         }
 
-        if (cellState.equals(CellState.FLAG)) {
+        if (cellState.equals(CellState.MARKED)) {
             this.flagsRemaining++;
-            this.userField[y][x] = CellState.UNKNOWN;
+            this.gameField[y][x].setCellState(CellState.CLOSED);
             notifyFieldUpdateListeners();
             notifyMinesCountListeners(this.flagsRemaining);
         }
@@ -260,35 +276,35 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
 
     @Override
     public void openCellsNearbyIfMinesMarked(Location location) {
-        if(!this.gameIsOngoing) {
+        if (!this.gameState.equals(GameState.RUNNING)) {
             return;
         }
 
         int cellX = location.x();
         int cellY = location.y();
-        CellState cellState = this.userField[cellY][cellX];
-        if (cellState.equals(CellState.UNKNOWN) || cellState.equals(CellState.FLAG) ||
-                cellState.equals(CellState.EMPTY) || cellState.equals(CellState.MINE)) {
+        CellState cellState = this.gameField[cellY][cellX].getCellState();
+        if (!cellState.equals(CellState.OPEN)) {
             return;
         }
-
+        //count flags nearby count
         int flagsNearby = 0;
         for (int x = cellX - 1; x <= cellX + 1; x++) {
             for (int y = cellY - 1; y <= cellY + 1; y++) {
                 if (isValidLocation(x, y) && (x != cellX || y != cellY) &&
-                        this.userField[y][x].equals(CellState.FLAG)) {
+                        this.gameField[y][x].getCellState().equals(CellState.MARKED)) {
                     flagsNearby++;
                 }
             }
         }
-        if (flagsNearby == CellState.getMinesNearbyCountByCellState(cellState)) {
+        if (flagsNearby == this.gameField[cellY][cellX].getMinesNearbyCount()) {
             openCellsNearby(location);
         }
     }
 
     @Override
     public void writeRecord(String username) {
-        this.recordsKeeper.updateRecordIfBeaten(new Record(this.gameInfo, username, this.timer.getSeconds()));
+        this.recordsKeeper.updateRecordIfBeaten(new Record(
+                this.gameInfo, username, this.timer.getSeconds()));
         notifyHighScoresListeners(this.recordsKeeper.getRecords());
     }
 }

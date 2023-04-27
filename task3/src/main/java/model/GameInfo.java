@@ -10,11 +10,12 @@ public record GameInfo(
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        GameInfo gameInfo = (GameInfo) o;
-        return this.fieldHeight == gameInfo.fieldHeight &&
-                this.fieldWidth == gameInfo.fieldWidth &&
-                this.minesCount == gameInfo.minesCount;
+        if (o instanceof GameInfo gameInfo) {
+            return this.fieldHeight == gameInfo.fieldHeight &&
+                    this.fieldWidth == gameInfo.fieldWidth &&
+                    this.minesCount == gameInfo.minesCount;
+        }
+        return false;
     }
 
     @Override

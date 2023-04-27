@@ -1,5 +1,6 @@
 package view;
 
+import model.Cell;
 import model.CellState;
 import model.GameInfo;
 import model.listener.FieldUpdateListener;
@@ -201,29 +202,28 @@ public class MainWindow extends JFrame implements
     }
 
     @Override
-    public void onFieldUpdate(CellState[][] field, GameInfo gameInfo) {
+    public void onFieldUpdate(Cell[][] field, GameInfo gameInfo) {
         for (int y = 0; y < gameInfo.fieldHeight(); y++) {
             for (int x = 0; x < gameInfo.fieldWidth(); x++) {
-                this.setCellImage(x, y, getGameImageByCellState(field[y][x]));
+                this.setCellImage(x, y, getGameImageByCell(field[y][x]));
             }
         }
     }
 
-    private static GameImage getGameImageByCellState(CellState cellState) {
-        return switch (cellState) {
-            case MINES_NEARBY_1 -> GameImage.NUM_1;
-            case MINES_NEARBY_2 -> GameImage.NUM_2;
-            case MINES_NEARBY_3 -> GameImage.NUM_3;
-            case MINES_NEARBY_4 -> GameImage.NUM_4;
-            case MINES_NEARBY_5 -> GameImage.NUM_5;
-            case MINES_NEARBY_6 -> GameImage.NUM_6;
-            case MINES_NEARBY_7 -> GameImage.NUM_7;
-            case MINES_NEARBY_8 -> GameImage.NUM_8;
-            case FLAG -> GameImage.MARKED;
-            case MINE -> GameImage.BOMB;
-            case UNKNOWN -> GameImage.CLOSED;
-            case EMPTY -> GameImage.EMPTY;
-        };
+    private static GameImage getGameImageByCell(Cell cell) {
+        if (cell.getCellState().equals(CellState.CLOSED)) {
+            return GameImage.CLOSED;
+        }
+        if (cell.getCellState().equals(CellState.MARKED)) {
+            return GameImage.MARKED;
+        }
+        if(cell.isArmed()) {
+            return GameImage.BOMB;
+        }
+        if(cell.getMinesNearbyCount() == 0) {
+            return GameImage.EMPTY;
+        }
+        return GameImage.valueOf("NUM_" + cell.getMinesNearbyCount());
     }
 
     @Override

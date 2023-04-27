@@ -3,8 +3,6 @@ package model;
 import model.listener.*;
 
 public interface MinesweeperModel {
-    void setGameInfo(GameInfo gameInfo);
-
     void addNewGameListener(NewGameListener newGameListener);
 
     void addMinesCountListener(MinesCountListener minesCountListener);
@@ -21,7 +19,9 @@ public interface MinesweeperModel {
 
     void addHighScoresListener(HighScoresListener highScoresListener);
 
-    void createNewGame();
+    void initGame(GameInfo gameInfo);
+
+    void initGame();
 
     void openCell(Location cellLocation);
 
