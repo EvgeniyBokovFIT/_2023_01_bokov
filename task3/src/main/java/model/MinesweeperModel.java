@@ -23,11 +23,11 @@ public interface MinesweeperModel {
 
     void initGame();
 
-    void openCell(Location cellLocation);
+    void openCell(int x, int y);
 
-    void markCellWithFlag(Location location);
+    void markCellWithFlag(int x, int y);
 
-    void openCellsNearbyIfMinesMarked(Location location);
+    void openCellsNearbyIfMinesMarked(int x, int y);
 
     void writeRecord(String username);
 }

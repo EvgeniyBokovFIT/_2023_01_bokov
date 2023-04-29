@@ -5,8 +5,8 @@ import model.record.Record;
 import model.record.RecordsKeeper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class DefaultMinesweeperModel implements MinesweeperModel{
     private GameInfo gameInfo;
@@ -127,32 +127,30 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
     }
 
     @Override
-    public void openCell(Location cellLocation) {
-        int cellX = cellLocation.x();
-        int cellY = cellLocation.y();
+    public void openCell(int x, int y) {
         if (this.gameState.equals(GameState.NONE) &&
-                this.gameField[cellY][cellX].getCellState().equals(CellState.CLOSED)) {
-            startGame(cellLocation);
+                this.gameField[y][x].getCellState().equals(CellState.CLOSED)) {
+            startGame(x, y);
         }
 
         if (!this.gameState.equals(GameState.RUNNING)) {
             return;
         }
 
-        if (!this.gameField[cellY][cellX].getCellState().equals(CellState.CLOSED)) {
+        if (!this.gameField[y][x].getCellState().equals(CellState.CLOSED)) {
             return;
         }
 
-        if (this.gameField[cellY][cellX].isArmed()) {
+        if (this.gameField[y][x].isArmed()) {
             finishLostGame();
             return;
         }
         this.openCellsCount++;
-        int minesNearby = countMinesNearby(cellLocation);
-        this.gameField[cellY][cellX].setMinesNearbyCount(minesNearby);
-        this.gameField[cellY][cellX].setCellState(CellState.OPEN);
+        int minesNearby = countMinesNearby(x, y);
+        this.gameField[y][x].setMinesNearbyCount(minesNearby);
+        this.gameField[y][x].setCellState(CellState.OPEN);
         if (minesNearby == 0) {
-            openCellsNearby(cellLocation);
+            openCellsNearby(x, y);
         }
         notifyFieldUpdateListeners();
         if (this.gameState.equals(GameState.RUNNING) && allEmptyCellsOpen()) {
@@ -160,8 +158,8 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
         }
     }
 
-    private void startGame(Location cellLocation) {
-        generateMineLocations(cellLocation);
+    private void startGame(int x, int y) {
+        generateMineLocations(x, y);
         this.timer.start();
         this.gameState = GameState.RUNNING;
     }
@@ -198,18 +196,20 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
         notifyGameLostListeners();
     }
 
-    private void generateMineLocations(Location firstTurnLocation) {
-        List<Location> possibleLocations = new ArrayList<>();
-        for (int y = 0; y < this.gameInfo.fieldHeight(); y++) {
-            for (int x = 0; x < this.gameInfo.fieldWidth(); x++) {
-                if (x != firstTurnLocation.x() || y != firstTurnLocation.y()) {
-                    possibleLocations.add(new Location(x, y));
-                }
+    private void generateMineLocations(int firstTurnX, int firstTurnY) {
+        Random random = new Random();
+        int fieldHeight = this.gameInfo.fieldHeight();
+        int fieldWidth = this.gameInfo.fieldWidth();
+        int firstTurnIndex = firstTurnY * fieldWidth + firstTurnX;
+        int armedCellsCount = 0;
+        while (armedCellsCount < this.gameInfo.minesCount()){
+            int cellWithMineIndex = random.nextInt(fieldHeight * fieldWidth);
+            int x = cellWithMineIndex % fieldWidth;
+            int y = cellWithMineIndex / fieldWidth;
+            if(cellWithMineIndex != firstTurnIndex && !this.gameField[y][x].isArmed()) {
+                this.gameField[y][x].setArmed(true);
+                armedCellsCount++;
             }
-        }
-        Collections.shuffle(possibleLocations);
-        for (Location location : possibleLocations.subList(0, this.gameInfo.minesCount())) {
-            this.gameField[location.y()][location.x()].setArmed(true);
         }
     }
 
@@ -222,13 +222,11 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
         return x >= 0 && x < gameInfo.fieldWidth() && y >= 0 && y < gameInfo.fieldHeight();
     }
 
-    private int countMinesNearby(Location cellLocation) {
-        int curCellX = cellLocation.x();
-        int curCellY = cellLocation.y();
+    private int countMinesNearby(int cellX, int cellY) {
         int minesNearbyCount = 0;
-        for (int x = curCellX - 1; x <= curCellX + 1; x++) {
-            for (int y = curCellY - 1; y <= curCellY + 1; y++) {
-                if (isValidLocation(x, y) && (x != curCellX || y != curCellY) && this.gameField[y][x].isArmed()) {
+        for (int x = cellX - 1; x <= cellX + 1; x++) {
+            for (int y = cellY - 1; y <= cellY + 1; y++) {
+                if (isValidLocation(x, y) && (x != cellX || y != cellY) && this.gameField[y][x].isArmed()) {
                     minesNearbyCount++;
                 }
             }
@@ -236,26 +234,22 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
         return minesNearbyCount;
     }
 
-    private void openCellsNearby(Location location) {
-        int cellX = location.x();
-        int cellY = location.y();
+    private void openCellsNearby(int cellX, int cellY) {
         for (int x = cellX - 1; x <= cellX + 1; x++) {
             for (int y = cellY - 1; y <= cellY + 1; y++) {
                 if (isValidLocation(x, y) && (x != cellX || y != cellY) && this.gameState.equals(GameState.RUNNING)) {
-                    openCell(new Location(x, y));
+                    openCell(x, y);
                 }
             }
         }
     }
 
     @Override
-    public void markCellWithFlag(Location location) {
+    public void markCellWithFlag(int x, int y) {
         if (this.gameState.equals(GameState.LOST) || this.gameState.equals(GameState.WON)) {
             return;
         }
 
-        int x = location.x();
-        int y = location.y();
         CellState cellState = this.gameField[y][x].getCellState();
 
         if (cellState.equals(CellState.CLOSED) && this.flagsRemaining > 0) {
@@ -275,18 +269,16 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
     }
 
     @Override
-    public void openCellsNearbyIfMinesMarked(Location location) {
+    public void openCellsNearbyIfMinesMarked(int cellX, int cellY) {
         if (!this.gameState.equals(GameState.RUNNING)) {
             return;
         }
 
-        int cellX = location.x();
-        int cellY = location.y();
         CellState cellState = this.gameField[cellY][cellX].getCellState();
         if (!cellState.equals(CellState.OPEN)) {
             return;
         }
-        //count flags nearby count
+        // count flags nearby count
         int flagsNearby = 0;
         for (int x = cellX - 1; x <= cellX + 1; x++) {
             for (int y = cellY - 1; y <= cellY + 1; y++) {
@@ -297,7 +289,7 @@ public class DefaultMinesweeperModel implements MinesweeperModel{
             }
         }
         if (flagsNearby == this.gameField[cellY][cellX].getMinesNearbyCount()) {
-            openCellsNearby(location);
+            openCellsNearby(cellX, cellY);
         }
     }
 

@@ -1,7 +1,6 @@
 package controller;
 
 import model.GameInfo;
-import model.Location;
 import model.MinesweeperModel;
 import view.ButtonType;
 import view.GameType;
@@ -17,17 +16,17 @@ public class Controller {
 
     public void handleCellClick(int x, int y, ButtonType buttonType) {
         if (buttonType.equals(ButtonType.LEFT_BUTTON)) {
-            this.model.openCell(new Location(x, y));
+            this.model.openCell(x, y);
             return;
         }
 
         if (buttonType.equals(ButtonType.RIGHT_BUTTON)) {
-            this.model.markCellWithFlag(new Location(x, y));
+            this.model.markCellWithFlag(x, y);
             return;
         }
 
         if (buttonType.equals(ButtonType.MIDDLE_BUTTON)) {
-            this.model.openCellsNearbyIfMinesMarked(new Location(x, y));
+            this.model.openCellsNearbyIfMinesMarked(x, y);
         }
     }
 
