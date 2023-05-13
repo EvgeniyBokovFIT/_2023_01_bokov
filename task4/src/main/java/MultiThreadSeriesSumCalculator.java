@@ -26,6 +26,7 @@ public class MultiThreadSeriesSumCalculator {
             nextThreadStartIndex += rangeSize;
             futures.add(threadPool.submit(task));
         }
+        threadPool.shutdown();
 
         double seriesSum = 0;
         for (Future<Double> future : futures) {
