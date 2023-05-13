@@ -13,9 +13,14 @@ public class SeriesSumService {
 
     }
 
-    public static double calculateSeriesSum() throws ExecutionException, InterruptedException {
+    public static double calculateSeriesSum() throws AppException {
         int n = readLastIndex();
-        return MultiThreadSeriesSumCalculator.calculateSeriesSum(0, n);
+        try {
+            return MultiThreadSeriesSumCalculator.calculateSeriesSum(0, n);
+        } catch (ExecutionException | InterruptedException e) {
+            log.error(e.getMessage(), e);
+            throw new AppException(e.getMessage(), e);
+        }
     }
 
     private static int getNextInt(Scanner scanner) {
