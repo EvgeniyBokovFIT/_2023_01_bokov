@@ -46,7 +46,6 @@ public class Service {
                         log.info("Поток прерван");
                     }
                 }
-                log.info("HOOK END");
             }));
         } catch (PropertiesException e) {
             log.error(e.getMessage(), e);
