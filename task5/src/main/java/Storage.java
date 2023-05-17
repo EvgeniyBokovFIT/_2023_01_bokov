@@ -3,8 +3,6 @@ import java.util.Queue;
 
 public class Storage {
     private final Queue<Resource> resources = new ArrayDeque<>();
-    private final Object fullStorageSynchronizer = new Object();
-    private final Object emptyStorageSynchronizer = new Object();
     private final int maxSize;
 
     public Storage(int maxSize) {
@@ -28,30 +26,6 @@ public class Storage {
     public Resource remove() {
         synchronized (this.resources) {
             return this.resources.poll();
-        }
-    }
-
-    public void waitOnEmpty() throws InterruptedException {
-        synchronized (this.emptyStorageSynchronizer) {
-            this.emptyStorageSynchronizer.wait();
-        }
-    }
-
-    public void waitOnFull() throws InterruptedException {
-        synchronized (this.fullStorageSynchronizer) {
-            this.fullStorageSynchronizer.wait();
-        }
-    }
-
-    public void notifyForEmpty() {
-        synchronized (this.emptyStorageSynchronizer) {
-            this.emptyStorageSynchronizer.notify();
-        }
-    }
-
-    public void notifyForFull() {
-        synchronized (this.fullStorageSynchronizer) {
-            this.fullStorageSynchronizer.notify();
         }
     }
 

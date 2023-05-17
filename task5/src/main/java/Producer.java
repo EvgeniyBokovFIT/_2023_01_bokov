@@ -9,6 +9,7 @@ public class Producer implements Runnable {
     private final Storage storage;
     private final long produceTimeMillis;
     private final int id;
+    private boolean running = true;
 
     public Producer(Storage storage, long produceTimeMillis, int id) {
         this.storage = storage;
@@ -21,38 +22,39 @@ public class Producer implements Runnable {
         try {
             produce();
         } catch (InterruptedException e) {
-            log.error(e.getMessage(), e);
+            log.info(THREAD_TYPE_MESSAGE + " Id потока: {}. Поток прерван", this.id);
         }
     }
 
     public void produce() throws InterruptedException {
-        while (true) {
-            while (this.storage.isFull()) {
-                this.storage.notifyForEmpty();
-                log.debug(THREAD_TYPE_MESSAGE + " Id потока: {}. Режим ожидания.", this.id);
-                this.storage.waitOnFull();
-                log.debug(THREAD_TYPE_MESSAGE + " Id потока: {}. Пробуждение", this.id);
+        while (this.running) {
+            synchronized (this.storage) {
+                while (this.storage.isFull()) {
+                    log.debug(THREAD_TYPE_MESSAGE + " Id потока: {}. Режим ожидания.", this.id);
+                    this.storage.wait();
+                    log.debug(THREAD_TYPE_MESSAGE + " Id потока: {}. Пробуждение", this.id);
+                }
+                produceResource();
             }
-            produceResource();
+            Thread.sleep(this.produceTimeMillis);
         }
     }
 
-    private void produceResource() throws InterruptedException {
-        synchronized (this.storage) {
-            if (!this.storage.isFull()) {
-                Resource resource = new Resource(createNextResourceId());
-                this.storage.add(resource);
-                log.info(THREAD_TYPE_MESSAGE + " Id потока: {}. Ресурс произведен. Id ресурса: {}. Ресурсов на складе: {}",
-                        this.id, resource.id(), this.storage.size());
-                this.storage.notifyForEmpty();
-            }
-        }
-        Thread.sleep(this.produceTimeMillis);
+    private void produceResource() {
+        Resource resource = new Resource(createNextResourceId());
+        this.storage.add(resource);
+        log.info(THREAD_TYPE_MESSAGE + " Id потока: {}. Ресурс произведен. Id ресурса: {}. Ресурсов на складе: {}",
+                this.id, resource.id(), this.storage.size());
+        this.storage.notifyAll();
     }
 
     private static int createNextResourceId() {
         synchronized (Producer.class) {
             return resourceIdSequence++;
         }
+    }
+
+    public void stop() {
+        this.running = false;
     }
 }
