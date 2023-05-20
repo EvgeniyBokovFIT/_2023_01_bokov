@@ -28,11 +28,12 @@ public class ChatWindow extends JFrame implements ServerMessageListener, Connect
         DefaultCaret caret = (DefaultCaret) chat.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
-
         chatMembers.setEditable(false);
         chatMembers.setLineWrap(true);
 
-        add(chat, BorderLayout.EAST);
+        JScrollPane scrollPane = new JScrollPane(chat);
+        add(scrollPane);
+
         add(chatMembers, BorderLayout.WEST);
         add(messageField, BorderLayout.SOUTH);
 
@@ -46,7 +47,7 @@ public class ChatWindow extends JFrame implements ServerMessageListener, Connect
         this.viewMessageListener = viewMessageListener;
     }
 
-    private synchronized void writeToChat(String message) {
+    private void writeToChat(String message) {
         chat.append(message + "\n");
         chat.setCaretPosition(chat.getDocument().getLength());
     }
