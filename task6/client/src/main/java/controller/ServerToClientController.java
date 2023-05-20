@@ -38,8 +38,8 @@ public class ServerToClientController {
                     continue;
                 }
                 if (receivedMessage.messageType() == MessageType.MESSAGE) {
-                    LocalTime now = LocalTime.now();
-                    this.messageListener.onServerMessage(now.getHour() + ":" + now.getMinute() + " " +
+
+                    this.messageListener.onServerMessage(getTimeString() + " " +
                             receivedMessage.username() + ": " + receivedMessage.message());
                     continue;
                 }
@@ -53,6 +53,15 @@ public class ServerToClientController {
                 log.error(e.getMessage(), e);
             }
         }
+    }
+
+    private static String getTimeString() {
+        LocalTime now = LocalTime.now();
+        int hour = now.getHour();
+        String hourString = Integer.toString(hour).length() < 2 ? "0" + hour : Integer.toString(hour);
+        int minute = now.getMinute();
+        String minuteString = Integer.toString(minute).length() < 2 ? "0" + minute : Integer.toString(minute);
+        return hourString + ":" + minuteString;
     }
 
     public void setServerMessageListener(ServerMessageListener listener) {
