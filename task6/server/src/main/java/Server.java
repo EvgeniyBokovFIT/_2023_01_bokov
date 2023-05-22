@@ -16,10 +16,9 @@ public class Server {
     }
 
     public void run() throws ServerException {
-        Socket socket = null;
         try (ServerSocket serverSocket = new ServerSocket(this.port)) {
             while (true) {
-                socket = serverSocket.accept();
+                Socket socket = serverSocket.accept();
                 try {
                     ClientHandler clientHandler = new ClientHandler(socket);
                     Thread messageHandlerThread = new Thread(clientHandler);
@@ -32,15 +31,6 @@ public class Server {
         } catch (IOException e) {
             log.error(SERVER_ERROR_MESSAGE, e);
             throw new ServerException(SERVER_ERROR_MESSAGE, e);
-        } finally {
-            try {
-                if (socket != null) {
-                    socket.close();
-                }
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
         }
-
     }
 }

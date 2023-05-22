@@ -31,7 +31,6 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        Message errorMessage = null;
         try {
             Message receivedMessage = serializer.readMessage(this.inputStream);
             if (receivedMessage.messageType() != MessageType.CONNECTION) {
@@ -41,11 +40,11 @@ public class ClientHandler implements Runnable {
 
             this.username = receivedMessage.username();
             if (usernameExists(this.username)) {
-                errorMessage = new Message(MessageType.ERROR, "Username already exists", this.username);
-                this.serializer.writeMessage(this.outputStream, errorMessage);
+                Message errorMessage = new Message(MessageType.ERROR, "Username already exists", this.username);
+                sendToThisClient(errorMessage);
                 return;
             }
-            sendMessage(new Message(MessageType.SUCCESS, "Connected successfully", this.username));
+            sendToThisClient(new Message(MessageType.SUCCESS, "Connected successfully", this.username));
             handlers.add(this);
 
             sendToAll(new Message(MessageType.NEW_MEMBER, getUserListAsString(), this.username));
@@ -57,12 +56,12 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         } finally {
-            finish(errorMessage);
+            finish();
         }
     }
 
-    private void finish(Message errorMessage) {
-        if (errorMessage == null) {
+    private void finish() {
+        if (handlers.contains(this)) {
             removeThisHandler();
         }
         sendUserListToClients();
@@ -96,11 +95,11 @@ public class ClientHandler implements Runnable {
 
     private void sendToAll(Message message) {
         for (ClientHandler clientHandler : handlers) {
-            clientHandler.sendMessage(message);
+            clientHandler.sendToThisClient(message);
         }
     }
 
-    private void sendMessage(Message message) {
+    private void sendToThisClient(Message message) {
         try {
             serializer.writeMessage(this.outputStream, message);
         } catch (IOException e) {
